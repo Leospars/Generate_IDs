@@ -1,4 +1,4 @@
-''' Create GUI for auto_cert.py to allow users to
+''' Create GUI for generate_IDs.py to allow users to
     - Select a template
     - Select a folder to save the certificates
     - Select the font size
@@ -13,13 +13,14 @@ from PyQt5.QtWidgets import QFileDialog, QApplication, QLabel
 from PyQt5.uic import loadUi
 
 
+textBoxNum = 0
 class MainWindow(Qtw.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi('generateID.ui', self)
         self.uploadButton.clicked.connect(self.uploadImage)
         # Allow the text box icon to create a draggable textbox to overlay on the template image
-        # self.setAcceptDrops(True)
+        self.setAcceptDrops(True)
         self.template_img.setAcceptDrops(True)  # Allows item to drag and drop onto the image
         self.template_img.dragEnterEvent = lambda e: e.accept()
         self.textBoxIcon = DragLabel(self.textBoxIcon)
@@ -42,7 +43,6 @@ class DragLabel(QLabel):
         self.dragStartPos = QPoint()
         self.dropAction = None
 
-
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             drag = QDrag(self)
@@ -51,8 +51,8 @@ class DragLabel(QLabel):
 
             # set an image when dragging and dropping
             icon_pixmap = QPixmap(self.size())
-            print(f"label size: {self.size}")
-            self.render(icon_pixmap)
+            print(f"label size: {self.size()}")
+            # self.render(icon_pixmap)
             drag.setPixmap(icon_pixmap)
 
             self.setCursor(Qt.ClosedHandCursor)
@@ -60,15 +60,25 @@ class DragLabel(QLabel):
 
             self.dropAction = drag.exec(Qt.MoveAction)
 
-    def dropEvent(self, event) :
+    def dropEvent(self, event):
         self.setCursor(Qt.OpenHandCursor)
         event.accept()
+        print(textNum := f"TextBox{textBoxNum:= textBoxNum + 1}")
         if self.dropAction == Qt.MoveAction:
-            textBox = ResizeableLabel(self.parent())
-            self.move(event.pos() - self.dragStartPos)
+            textBox = QLabel(textNum)
+            # set textbox position to where the mouse is dropped
+            textBox.setGeometry(QRect(event.pos(), QSize(100, 20)))
+            (self.parent().layout().addWidget(textBox))
+            textBox.show()
+
+    def dragEnterEvent(self, event):
+        event.accept()
+
+    def dragMoveEvent(self, event):
+        print("Pos: " + event.pos())
 
 
-class ResizeableLabel (QLabel):
+class ResizeableLabel(QLabel):
     def __init__(self, parent=None):
         super(ResizeableLabel, self).__init__(parent)
         self.setScaledContents(True)
@@ -84,6 +94,7 @@ class ResizeableLabel (QLabel):
     def setPixmap(self, pixmap):
         super(ResizeableLabel, self).setPixmap(pixmap)
         self.setMinimumSize(1, 1)
+
 
 if __name__ == '__main__':
     app = QApplication([])
