@@ -94,17 +94,7 @@ class GetFonts:
 if __name__ == "__main__":
     font = PyQt5.QtGui.QFont("Lucida Console", 12)
     print(f"Font: {font.family()}, {font.pointSize()}pt")
-
     gf = GetFonts()
-    # display the font in a PyQt Label
-    # async def execApp():
-    #     app = QApplication([])
-    #     label = QLabel("Hello World")
-    #     label.setFont(font)
-    #     label.show()
-    #     app.exec_()
-    #
-    # asyncio.run(execApp())
 
     print(f"Font Family: {font.family()}")
     font_path = gf.find_ttf_font(font.family())
