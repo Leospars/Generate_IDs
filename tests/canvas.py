@@ -24,7 +24,7 @@ class Canvas(QLabel):
         painter.end()
 
     def draw(self):
-        self.painter.drawRect(self.geometry())
+        self.painter.drawRect(self.geometry())  # add border around canvas
         pass
 
     def addTextBoxOnClick(self, event, width=200, height=200, _id=str("TextBox"), font=QFont("Arial", 12)):
@@ -46,4 +46,3 @@ class Canvas(QLabel):
         self.rectIDs.clear()
         self.rectFonts.clear()
         self.update()
-        self.paintEvent(None)
