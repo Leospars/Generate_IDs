@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel(self)
         self.label.setGeometry(0, 0, 600, 400)
         self.label.setText("Hello")
-        self.label.setPixmap(QPixmap("./MGI_Blank Lvl1.png"))
+        self.label.setPixmap(QPixmap("../img/MGI_Blank Lvl1.png"))
         self.label.setScaledContents(True)
         self.canvas = Canvas(self)
         self.canvas.setGeometry(0, 0, 600, 400)

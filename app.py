@@ -7,24 +7,47 @@
 '''
 
 import PyQt5.QtWidgets as Qtw
+from tests.canvas import Canvas
+from generateID_ui import Ui_MainWindow
 from PyQt5.QtCore import Qt, QMimeData, QRect, QSize, QPoint
-from PyQt5.QtGui import QDrag, QPixmap
-from PyQt5.QtWidgets import QFileDialog, QApplication, QLabel
+from PyQt5.QtGui import QDrag, QPixmap, QFont, QPainter
+from PyQt5.QtWidgets import QFileDialog, QApplication, QLabel, QMainWindow
 from PyQt5.uic import loadUi
 
-
 textBoxNum = 0
-class MainWindow(Qtw.QMainWindow):
+
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
-        super(MainWindow, self).__init__()
-        loadUi('generateID.ui', self)
+        super(QMainWindow, self).__init__()
+        # loadUi('generateID.ui', self)
+        self.setupUi(self)
+        self.addWidgets()
+        self.setEventHandlers()
+
+    def addWidgets(self):
+        self.template_overlay = Canvas(self.template_img)
+        self.template_overlay.setGeometry(self.template_img.geometry())
+        self.template_overlay.draw = lambda: self.addPaint(self.template_overlay)
+        self.horizontalLayout.addWidget(self.template_overlay)
+
+    def addPaint(self, canvas):
+        painter = canvas.painter
+        # tint background
+        painter.setBrush(Qt.black)
+        painter.setOpacity(0.5)
+        painter.drawRect(canvas.rect())
+        painter.setBrush(Qt.blue)
+        painter.setOpacity(0.3)
+        painter.drawRect(canvas.geometry())
+        print("Canvas rect:", canvas.rect(), "Canvas geometry:", canvas.geometry(),
+              "Template img rect:", self.template_img.rect(), "Template img geometry:", self.template_img.geometry())
+
+    def setEventHandlers(self):
         self.uploadButton.clicked.connect(self.uploadImage)
-        # Allow the text box icon to create a draggable textbox to overlay on the template image
-        self.setAcceptDrops(True)
-        self.template_img.setAcceptDrops(True)  # Allows item to drag and drop onto the image
-        self.template_img.dragEnterEvent = lambda e: e.accept()
-        self.textBoxIcon = DragLabel(self.textBoxIcon)
         self.generateIDButton.clicked.connect(self.generateID)
+        self.addTextBoxButton.clicked.connect(self.addTextBox)
+
+        self.txtBox = Canvas(self)
 
     def uploadImage(self):
         template_filename, _ = QFileDialog.getOpenFileName(self, "Open Template File", "",
@@ -36,65 +59,31 @@ class MainWindow(Qtw.QMainWindow):
     def generateID(self):
         print("Generate ID")
 
+    def addTextBox(self):
+        # Change template image cursor
+        self.template_img.setCursor(Qt.CrossCursor)
+        self.template_overlay.mousePressEvent = lambda event: self.createTextBoxOnClick(event)
+        print("Add Teox")
 
-class DragLabel(QLabel):
-    def __init__(self, parent=None):
-        super(DragLabel, self).__init__(parent)
-        self.dragStartPos = QPoint()
-        self.dropAction = None
+    def createTextBoxOnClick(self, event):
+        # get values from user input
+        print(f"Width: {self.txtBoxW.placeholderText()}, Height: {self.txtBoxH.text()}")
+        width = self.txtBoxW.text() | self.txtBoxW.placeholderText()
+        height = self.txtBoxH.text() | self.txtBoxH.placeholderText()
+        width = int(width)
+        height = int(height)
+        font = self.fontComboBox.currentFont()  # get font from combobox
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            drag = QDrag(self)
-            mime = QMimeData()
-            drag.setMimeData(mime)
+        #increment textBoxID
+        global textBoxNum
+        textBoxNum += 1
 
-            # set an image when dragging and dropping
-            icon_pixmap = QPixmap(self.size())
-            print(f"label size: {self.size()}")
-            # self.render(icon_pixmap)
-            drag.setPixmap(icon_pixmap)
-
-            self.setCursor(Qt.ClosedHandCursor)
-            self.dragStartPos = event.pos()
-
-            self.dropAction = drag.exec(Qt.MoveAction)
-
-    def dropEvent(self, event):
-        self.setCursor(Qt.OpenHandCursor)
-        event.accept()
-        print(textNum := f"TextBox{textBoxNum:= textBoxNum + 1}")
-        if self.dropAction == Qt.MoveAction:
-            textBox = QLabel(textNum)
-            # set textbox position to where the mouse is dropped
-            textBox.setGeometry(QRect(event.pos(), QSize(100, 20)))
-            (self.parent().layout().addWidget(textBox))
-            textBox.show()
-
-    def dragEnterEvent(self, event):
-        event.accept()
-
-    def dragMoveEvent(self, event):
-        print("Pos: " + event.pos())
-
-
-class ResizeableLabel(QLabel):
-    def __init__(self, parent=None):
-        super(ResizeableLabel, self).__init__(parent)
-        self.setScaledContents(True)
-
-    def mousePressEvent(self, event):
-        if (event.button() == Qt.LeftButton and
-                self.geometry().contains(event.pos())):
-            self.dragStartPos = event.pos()
-
-    def resizeEvent(self, event):
-        self.setPixmap(self.pixmap().scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-
-    def setPixmap(self, pixmap):
-        super(ResizeableLabel, self).setPixmap(pixmap)
-        self.setMinimumSize(1, 1)
-
+        self.template_overlay.addTextBoxContext(
+            rects=[QRect(event.pos().x(), event.pos().y(), width, height)],
+            rectIDs=[f"TextBox{textBoxNum}"],
+            rectFonts=[font]
+        )
+        print(f"TextBox{textBoxNum} added at {event.pos().x(), event.pos().y()} with size {width}x{height}")
 
 if __name__ == '__main__':
     app = QApplication([])
