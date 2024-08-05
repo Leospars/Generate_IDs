@@ -11,7 +11,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow
 
 from generateID_ui import Ui_MainWindow
-from generateTabs import generateDataTab, dataTabUpdate
+from generateTabs import generateToolBox, updateToolBox
 from tests.SpecialComboBox import TtfComboBox
 from tests.canvas import Canvas
 
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		self.canvas = Canvas(self.template_img.parent())
 		self.canvas.setGeometry(self.template_img.geometry())
 		self.canvas.draw = lambda: self.addPaint(self.canvas)
-		generateDataTab(self, self.canvas)
+		generateToolBox(self, self.canvas)
 
 	def setEventHandlers(self):
 		self.uploadButton.clicked.connect(self.uploadImage)
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 			_id=_id,
 			font=font
 		)
-		dataTabUpdate(self, self.canvas)
+		updateToolBox(self, self.canvas)
 		self.canvas.unsetCursor()  # revert cursor
 		self.canvas.mousePressEvent = lambda ev: None  # remove event handler
 		print(f"{_id} added at {x, y} with size {width}x{height}")
