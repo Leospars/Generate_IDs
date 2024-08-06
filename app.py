@@ -1,4 +1,4 @@
-''' Create GUI for generate_IDs.py to allow users to
+''' Create GUI for auto_cert.py to allow users to
     - Select a template
     - Select a folder to save the certificates
     - Select the font size
