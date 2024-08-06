@@ -1,14 +1,15 @@
 import PyQt5.QtWidgets as Qtw
+from PyQt5.QtGui import QFont
 
 from tests.GetFonts import GetFonts
 
 class TtfComboBox(Qtw.QFontComboBox):
 	def __init__(self, parent: Qtw.QWidget | None = None):
-		super().__init__()
+		super().__init__(parent)
 		self.clear()
 		font_dirmap = GetFonts.get_font_dirmap()
 		self.addItems(font_dirmap.keys())
-		self.setParent(parent)
+		self.setCurrentFont(QFont("Arial", 12))
 
 class FontSizeComboBox(Qtw.QComboBox):
 	def __init__(self, parent: Qtw.QWidget | None = None):
@@ -21,21 +22,21 @@ class FontSizeComboBox(Qtw.QComboBox):
 		self.resize(54, 22)
 
 if __name__ == "__main__":
-	app = Qtw.QApplication([])
-	window = Qtw.QMainWindow()
-	window.setWindowTitle("Special ComboBoxes")
-	window.resize(300, 200)
-	centWidget = Qtw.QWidget()
 	import sys
 
-	print(sys.argv)
-	layout = Qtw.QGridLayout(window)
-	font_box = TtfComboBox(window)
-	font_size_box = FontSizeComboBox(window)
-	layout.addWidget(font_size_box, 0, 0, 1, 1)
-	layout.addWidget(font_box, 1, 1, 1, 1)
+	app = Qtw.QApplication(sys.argv)
+	window = Qtw.QMainWindow()
+	window.setWindowTitle("Special ComboBoxes Demo")
+	window.resize(300, 100)
+	centralWidget = Qtw.QWidget()
+	window.setCentralWidget(centralWidget)
 
-	# vLayout.addLayout(layout)
-	window.setLayout(layout)
+	layout = Qtw.QVBoxLayout(centralWidget)
+	centralWidget.setLayout(layout)
+	font_box = TtfComboBox()
+	font_size_box = FontSizeComboBox()
+	layout.addWidget(font_size_box)
+	layout.addWidget(font_box)
+
 	window.show()
-	app.exec()
+	sys.exit(app.exec())
