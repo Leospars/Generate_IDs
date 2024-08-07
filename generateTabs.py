@@ -4,7 +4,7 @@ from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolBox
 
-from tests.SpecialComboBox import TtfComboBox, FontSizeComboBox
+from SpecialComboBox import TtfComboBox, FontSizeComboBox
 from tests.canvas import Canvas
 
 class DataObject:
@@ -29,19 +29,21 @@ def get_data_from_canvas(canvas: Canvas):
 # helper function to translate texts in the window
 __translate__ = QtCore.QCoreApplication.translate
 
-def generateToolBox(parent: QToolBox, canvas: Canvas | list[DataObject]):
+def generateToolBox(tool_box: QToolBox, canvas: Canvas | list[DataObject]):
 	# if data types entered do not match expected throw an error
 	if not isinstance(canvas, Canvas) and not isinstance(canvas, list):
 		raise TypeError("canvas must be of type Canvas")
 
-	if not isinstance(parent, QToolBox):
-		raise TypeError("parent must be of type QToolBox")
+	if not isinstance(tool_box, QToolBox):
+		raise TypeError("tool_box must be of type QToolBox")
 
-	tool_box = QtWidgets.QToolBox()
 	tool_box.setObjectName("toolBox")
 
 	# get canvas data for generating frames
-	canvas_data = get_data_from_canvas(canvas)
+	if isinstance(canvas, Canvas):
+		canvas_data = get_data_from_canvas(canvas)
+	else:
+		canvas_data = canvas
 
 	# create a page for each field in the toolbox
 	for box in canvas_data:
@@ -73,19 +75,24 @@ def generateToolBox(parent: QToolBox, canvas: Canvas | list[DataObject]):
 		text_box.setGeometry(QtCore.QRect(0, 30, 800, 80))
 		text_box.setObjectName(field_name + '_data')
 		if data_type == "QFont":
-			text_box.setPlaceholderText(__translate__("MainWindow", "Enter comma seperated values here . . .\n"))
+			text_box.setPlaceholderText("Enter comma seperated values here . . .\n")
 		else:
 			# TODO: Add support for auto generating images
-			text_box.setPlaceholderText(__translate__("MainWindow", "Enter path to folder with images"))
+			text_box.setPlaceholderText("Enter path to folder with images")
 
-		# add the combo boxes to the page
-		tool_box.addItem(page, __translate__("MainWindow", field_name))
-		vLayout.addWidget(tool_box)  # Add the toolbox to the vLayout in the window
-
-	tool_box.show()
-	QtCore.QMetaObject.connectSlotsByName(parent)
+		# add the page to the toolbox
+		tool_box.addItem(page, field_name)
+		print(f"Toolbox Page Count In function: {tool_box.count()}")
+	return tool_box
 
 def updateToolBox(tool_box: QToolBox, canvas: Canvas):
+	# if data types entered do not match expected throw an error
+	if not isinstance(canvas, Canvas) and not (isinstance(canvas, list) and isinstance(canvas[0], DataObject)):
+		raise TypeError("canvas must be of type Canvas")
+
+	if not isinstance(tool_box, QToolBox):
+		raise TypeError("tool_box must be of type QToolBox")
+
 	# ignore up to last page than add to toolbox
 	last_page = tool_box.count()
 	canvas_data = get_data_from_canvas(canvas)
@@ -101,23 +108,26 @@ if __name__ == "__main__":
 	# test the generateTabs function
 	app = QApplication([])
 	canvas = Canvas()
-	canvas.setGeometry(0, 0, 1100, 300)
 	canvas.addTextBoxContent([QRect(0, 0, 100, 100), QRect(0, 0, 100, 100)], ["Name", "ID_Number"],
 							 [QFont("Arial", 12), QFont("Lucida Console", 12)])
-
 	window = QMainWindow()
 	window.resize(800, 600)
 	window.setWindowTitle("Generate Toolbox for IDs")
+	window.mainLayout = QtWidgets.QVBoxLayout()
+
 	centralWidget = QtWidgets.QWidget()
+	centralWidget.resize(800, 600)
 	window.setCentralWidget(centralWidget)
+	window.mainLayout.addWidget(centralWidget)
+	window.setLayout(window.mainLayout)
+
 	vLayout = QtWidgets.QVBoxLayout(centralWidget)
 	vLayout.setObjectName("verticalLayout")
 
 	window.tool_box = QtWidgets.QToolBox()
-	vLayout.addWidget(window.tool_box)
-
 	generateToolBox(window.tool_box, canvas)
+	vLayout.addWidget(window.tool_box)
+	centralWidget.setLayout(vLayout)
+
 	window.show()
 	app.exec()
-
-	pass
