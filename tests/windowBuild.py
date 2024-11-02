@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QPushButton, QLineEdit, QApplication, QDialog, QGridLayout
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QPixmap, QFont
-from canvas import Canvas
+from PyQt5.QtGui import QPixmap, QFont, QWindow
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QLineEdit, QApplication, QDialog, QGridLayout
 
-def __center_rect__(self, width, height):
+from tests.canvas import Canvas
+
+
+def center_rect(width, height):
     # Get device screen size
     screen_geo = QApplication.desktop().geometry()
     print(screen_geo)
@@ -66,6 +68,6 @@ def canvasBuild(self):
 
 if __name__ == '__main__':
     app = QApplication([])
-    window = Window()
+    window = QWindow()
     window.show()
     app.exec()

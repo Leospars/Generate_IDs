@@ -10,10 +10,10 @@ from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QDialog
 
-from generateID_ui import Ui_MainWindow
 from generateTabs import generateToolBox, updateToolBox
+from main_ui import Ui_MainWindow
 from tests.canvas import Canvas
-from tests.windowBuild import centerRectOnScreen
+from tests.windowBuild import center_rect
 
 # from PyQt5.uic import loadUi
 
@@ -22,7 +22,7 @@ textBoxNum = 0
 class MainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		super(QMainWindow, self).__init__()
-		# loadUi('generateID.ui', self)
+		# loadUi('main.ui', self)
 		self.setupUi(self)
 		self.show()
 		self.addWidgets()
@@ -40,7 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		# create dialog window for adding data
 		self.dataDialog = QDialog()
 		self.dataDialog.setWindowTitle("Add Data For ID")
-		self.dataDialog.setGeometry(centerRectOnScreen(300, 400))
+		self.dataDialog.setGeometry(center_rect(300, 400))
 
 		# remove all pages in tool box
 		for i in range(0, self.tool_box.count()):
