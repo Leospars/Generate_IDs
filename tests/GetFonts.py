@@ -3,6 +3,7 @@ import os
 import PyQt5.QtGui
 from PIL import ImageFont, ImageDraw, Image
 
+
 class GetFonts:
 	def __init__(self):
 		self.system_ttf_fonts = self.find_all_ttf_fonts()  # List of all ttf fonts files in the system
@@ -81,7 +82,7 @@ class GetFonts:
 	def find_ttf_font(self, font_family):
 		return self.font_dirmap.get(font_family, None)
 
-	def qFontToPILFont(self, qFont: PyQt5.QtGui.QFont):
+	def qfont_to_ttf(self, qFont: PyQt5.QtGui.QFont):
 		if qFont.family() in self.font_dirmap:
 			return ImageFont.truetype(self.font_dirmap[qFont.family()], qFont.pointSize())
 		else:

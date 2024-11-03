@@ -39,7 +39,7 @@ def generateTabs(parent: QtWidgets):
 
     # create a page for each field in the toolbox
     for box in canvas_data:
-        field_name = box.data
+        field_name = box.label_name
 
         # create a page for each field in the toolbox
         page = QtWidgets.QWidget(tool_box)
