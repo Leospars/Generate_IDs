@@ -42,24 +42,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dataDialog.setWindowTitle("Add Data For ID")
         self.dataDialog.setGeometry(center_rect(300, 400))
 
+        # set default template image
+        self.template_img.setPixmap(QPixmap(self.template_filename))
+
         # remove all pages in tool box
-        for i in range(0, self.tool_box.count()):
-            self.tool_box.removeItem(i)
-        print(f"Toolbox is emptied now. Page Count: {self.tool_box.count()}")
-        generateToolBox(self.tool_box, self.canvas)
+        self.clear_ids()
 
     def setEventHandlers(self):
         self.uploadButton.clicked.connect(self.uploadImage)
         self.generateIDButton.clicked.connect(self.generate_certificates)
         self.addTextBoxButton.clicked.connect(self.addTextBox)
-        self.clearIDButton.clicked.connect(self.canvas.clearCanvas)
+        self.clearIDButton.clicked.connect(self.clear_ids)
 
     def uploadImage(self):
-        self.template_filename, _ = QFileDialog.getOpenFileName(self, "Open Template File", "",
-                                                                "Image Files (*.png *.jpg *jpeg *.bmp);;All Files (*)")
+        filename, _ = QFileDialog.getOpenFileName(self, "Open Template File", "",
+                                                  "Image Files (*.png *.jpg *jpeg *.bmp);;All Files (*)")
+
+        self.template_filename = filename if filename else self.template_filename
         if self.template_filename:
             self.template_img.setPixmap(QPixmap(self.template_filename))
             print(self.template_filename)
+
+    def clear_ids(self):
+        self.canvas.clearCanvas()
+        print(f"Range: {range(0, self.tool_box.count())}, {list(range(0, self.tool_box.count()))} ")
+        for i in reversed(range(0, self.tool_box.count())):
+            print(f"Removing page {i}: {self.tool_box.widget(i).objectName() if self.tool_box.widget(i) else None}")
+            self.tool_box.removeItem(i)
+        print(f"Toolbox is emptied now. Page Count: {self.tool_box.count()}")
+        generateToolBox(self.tool_box, self.canvas)
 
     def addPaint(self, canvas):
         painter = canvas.painter
