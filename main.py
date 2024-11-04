@@ -1,4 +1,4 @@
-''' Create GUI for auto_cert.py to allow users to
+''' Create GUI to allow users to
     - Select a template
     - Select a folder to save the certificates
     - Select the font size
@@ -87,8 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         fonts = [data.metadata for data in toolbox_data]
         label_positions = [data.position for data in toolbox_data]
         alignment = [data.alignment for data in toolbox_data]
-        # TODO: Fix font and position scaling issue due the canvas overlay dimensions being less than the template image
-        generator.gen_certs(data_list, label_positions, fonts, self.template_filename, alignment=alignment)
+
+        generator.gen_certs(data_list, label_positions, fonts, self.template_filename,
+                            alignment=alignment, canvas_size=self.canvas.size())
 
     def addTextBox(self):
         # Change template image cursor
@@ -111,12 +112,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if _id in self.canvas.rectLabels:
             _id += "_" + str(len(self.canvas.rectLabels))
 
+        # Move start coordinates to top left corner if width or height is negative
+        if width < 0 or height < 0:
+            x, y = (x + width), (y + height)
+            width, height = abs(width), abs(height)
+
         # Add TextBox to canvas
         self.canvas.addTextBox(
             rect=QRect(x, y, width, height),
             _id=_id,
             font=font
         )
+        # print(f"Canvas Data: {self.canvas.rects, self.canvas.rectLabels,
+        # [[font.family(), font.pointSize()] for font in self.canvas.rectFonts]}")
+
         updateToolBox(self.tool_box, self.canvas)
         self.canvas.unsetCursor()  # revert cursor
         self.canvas.mousePressEvent = lambda ev: None  # remove event handler

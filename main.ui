@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1160</width>
+    <width>1208</width>
     <height>806</height>
    </rect>
   </property>
@@ -174,7 +174,7 @@
                <number>2</number>
               </property>
               <item row="1" column="1">
-               <widget class="QFontComboBox" name="fontComboBox"/>
+               <widget class="TtfComboBox" name="fontComboBox"/>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label">
@@ -184,7 +184,7 @@
                </widget>
               </item>
               <item row="1" column="2">
-               <widget class="QComboBox" name="fontSizeComboBox">
+               <widget class="FontSizeComboBox" name="fontSizeComboBox">
                 <property name="editable">
                  <bool>true</bool>
                 </property>
@@ -374,7 +374,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1110</width>
+             <width>1158</width>
              <height>677</height>
             </rect>
            </property>
@@ -391,7 +391,7 @@
              </rect>
             </property>
            </widget>
-           <widget class="QFontComboBox" name="idTtfComboBox_2">
+           <widget class="TtfComboBox" name="idTtfComboBox_2">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -401,7 +401,7 @@
              </rect>
             </property>
            </widget>
-           <widget class="QComboBox" name="comboBox">
+           <widget class="FontSizeComboBox" name="comboBox">
             <property name="geometry">
              <rect>
               <x>240</x>
@@ -431,6 +431,18 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TtfComboBox</class>
+   <extends>QFontComboBox</extends>
+   <header location="global">SpecialComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FontSizeComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">SpecialComboBox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

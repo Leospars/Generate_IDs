@@ -10,11 +10,13 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from SpecialComboBox import FontSizeComboBox, TtfComboBox
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1160, 806)
+        MainWindow.resize(1208, 806)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -70,13 +72,13 @@ class Ui_MainWindow(object):
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.fontComboBox = QtWidgets.QFontComboBox(self.setupTab)
+        self.fontComboBox = TtfComboBox(self.setupTab)
         self.fontComboBox.setObjectName("fontComboBox")
         self.gridLayout_2.addWidget(self.fontComboBox, 1, 1, 1, 1)
         self.label = QtWidgets.QLabel(self.setupTab)
         self.label.setObjectName("label")
         self.gridLayout_2.addWidget(self.label, 1, 0, 1, 1)
-        self.fontSizeComboBox = QtWidgets.QComboBox(self.setupTab)
+        self.fontSizeComboBox = FontSizeComboBox(self.setupTab)
         self.fontSizeComboBox.setEditable(True)
         self.fontSizeComboBox.setMaxVisibleItems(12)
         self.fontSizeComboBox.setObjectName("fontSizeComboBox")
@@ -155,15 +157,15 @@ class Ui_MainWindow(object):
         self.tool_box.setFrameShadow(QtWidgets.QFrame.Plain)
         self.tool_box.setObjectName("tool_box")
         self.idField_1 = QtWidgets.QWidget()
-        self.idField_1.setGeometry(QtCore.QRect(0, 0, 1110, 677))
+        self.idField_1.setGeometry(QtCore.QRect(0, 0, 1158, 677))
         self.idField_1.setObjectName("idField_1")
         self.textBox2_Data = QtWidgets.QPlainTextEdit(self.idField_1)
         self.textBox2_Data.setGeometry(QtCore.QRect(0, 30, 800, 80))
         self.textBox2_Data.setObjectName("textBox2_Data")
-        self.idTtfComboBox_2 = QtWidgets.QFontComboBox(self.idField_1)
+        self.idTtfComboBox_2 = TtfComboBox(self.idField_1)
         self.idTtfComboBox_2.setGeometry(QtCore.QRect(0, 0, 226, 22))
         self.idTtfComboBox_2.setObjectName("idTtfComboBox_2")
-        self.comboBox = QtWidgets.QComboBox(self.idField_1)
+        self.comboBox = FontSizeComboBox(self.idField_1)
         self.comboBox.setGeometry(QtCore.QRect(240, 0, 73, 22))
         self.comboBox.setEditable(True)
         self.comboBox.setMaxVisibleItems(12)
