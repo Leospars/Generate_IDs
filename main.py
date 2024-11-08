@@ -81,7 +81,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def generate_certificates(self):
         print("Generating ID")
-        generator = ID_Generator(self.canvas.rectLabels, self.canvas.rects, self.template_img, self.canvas.rectFonts)
+        generator = ID_Generator(self.canvas.rectLabels, self.canvas.rects, self.canvas.rectFonts,
+                                 self.template_filename)
         toolbox_data = get_data_from_toolbox(self.tool_box, self.canvas)
         data_list = [data.labels for data in toolbox_data]
         fonts = [data.metadata for data in toolbox_data]

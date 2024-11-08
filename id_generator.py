@@ -24,17 +24,18 @@ print(f"\nDefault Font: {_default_font.font.family}, {_default_font.font.height}
 
 
 class ID_Generator:
-    def __init__(self, data: list[list], label_positions: list[QRect] = [], template: str = "", save_folder="",
-                 font: list[QFont] = [], alignment="center"):
+    def __init__(self, data: list[list], label_positions: list[QRect], fonts: list[QFont], template: str,
+                 save_folder="",
+                 alignment="center"):
 
         self.data = data
         self.label_positions = label_positions
         self.template = template
         self.save_folder = save_folder
-        if font is None:
+        if fonts is None:
             self.fonts = [_default_font]
         else:
-            self.fonts = font
+            self.fonts = fonts
         self.alignment = alignment
         self.filenames = []
         self.save_folder = ""
@@ -145,38 +146,20 @@ class ID_Generator:
             # Call draw Method to add 2D graphics in an image
             draw = ImageDraw.Draw(img)
 
-            # Scale the location based on image built open of canvas size
-            # TODO: Ensure that canvas ratio matches image ratio to ensure text is on image
-            (canvas_x, canvas_y) = canvas_size.width(), canvas_size.height()
-            (imgsz_x, imgsz_y) = img.size
-            scale_x = imgsz_x / float(canvas_x)
-            scale_y = imgsz_y / float(canvas_y)
-
-            # print(f"Image: {imgsz_x}, {imgsz_y}")
-            # print(f"Canvas: {canvas_x}, {canvas_y}")
-            # print(f"Scale: {scale_x}, {scale_y}")
-
-            # draw a text box transparent background
-            top_corner = (x0 := cert_pos.x() * scale_x, y0 := cert_pos.y() * scale_y)
-            bottom_corner = (x1 := cert_pos.bottomRight().x() * scale_x, y1 := cert_pos.bottomRight().y() * scale_y)
-
-            rect = [top_corner, bottom_corner]
-            width = rect[1][0] - rect[0][0]
-            height = rect[1][1] - rect[0][1]
-            x = rect[0][0]
-            y = rect[0][1]
-
-            # Evaluate position of text in textbox
-            if alignment == "center":
-                text_x = (x + width / 2) - draw.textlength(name, font=font) / 2
-            text_y = (y + height / 2) - draw.textlength("W", font=font) / 2
+            # Scale font size and text box based on canvas and image size
+            font_size, text_box, scaled_rect = self._scale_text_box(font, name, cert_pos, canvas_size)
+            _font = ImageFont.truetype(font.path, font_size)
+            text_x, text_y, text_w, text_h = text_box
 
             # Draw rect for debugging
-            print(f"Cert_pos {cert_pos} -> Rect: {rect}")
-            draw.rectangle(rect, outline=2)
+            # rect_textbox = (text_x, text_y, text_x + text_w, text_y + text_h)
+            # print(f"Cert_pos {cert_pos} -> Rect: {rect_textbox}")
+            # draw.rectangle(rect_textbox, outline=2)
+            # draw.rectangle(scaled_rect, outline=2)
 
             # Add Text to an image
-            draw.text((text_x, text_y), name, font=font, fill=(0, 0, 0), align="center")
+
+            draw.text((text_x, text_y), name, font=_font, fill=(0, 0, 0), align="center")
 
             # Save the edited image
             if not os.path.exists(save_folder):
@@ -203,18 +186,66 @@ class ID_Generator:
         # time.sleep(1)
         # os.startfile(os.path.join(save_folder, filename))
 
+    def _scale_text_box(self, font: FreeTypeFont, name: str, cert_pos: QRect, canvas_size: QRect, template: str = None,
+                        alignment: str = "center"):
+        if not template:
+            template = self.template
+        if not alignment:
+            alignment = self.alignment
+
+        # Scale the location based on image built open of canvas size
+        img = Image.open(template)
+        # TODO: Ensure that canvas ratio matches image ratio to ensure text is on image
+        (canvas_width, canvas_height) = canvas_size.width(), canvas_size.height()
+        (imgsz_x, imgsz_y) = img.size
+        scale_x = imgsz_x / float(canvas_width)
+        scale_y = imgsz_y / float(canvas_height)
+
+        print(f"Image: {imgsz_x}, {imgsz_y}")
+        print(f"Canvas: {canvas_width}, {canvas_height}")
+        print(f"Scale: {scale_x}, {scale_y}")
+
+        # scale the font size
+        font_size = int(font.size * scale_y)
+        font = ImageFont.truetype(font.path, font_size)
+        text_w, text_h = font.font.getsize(name)[0]
+        print(f"Font Size: {font.size}, {font.font.family}, {font.font.height}")
+
+        # scale text box
+        top_left = (x0 := cert_pos.x() * scale_x, y0 := cert_pos.y() * scale_y)
+        bottom_right = (x1 := cert_pos.bottomRight().x() * scale_x, y1 := cert_pos.bottomRight().y() * scale_y)
+        scaled_rect = (top_left, bottom_right)
+        scaled_rect_w, scaled_rect_h = x1 - x0, y1 - y0
+
+        # Default text position
+        text_x = x0
+        text_y = y0
+        # Evaluate position of text in textbox
+        print(f"Text position: {text_x}, {text_y}")
+        print(f"Text Length: {text_w}, {text_h}")
+        if alignment == "center":
+            if scaled_rect_w > text_w:
+                text_x = int(x0 + (scaled_rect_w - text_w) / 2)
+                text_y = int(y0 + (scaled_rect_h - text_h) / 2)
+                print(f"Centered: {text_x}, {text_y}")
+            else:
+                print("Text too long for textbox. Adjusting...")
+
+        return font.size, (int(text_x), int(text_y), text_w, text_h), scaled_rect
+
 
 if __name__ == "__main__":
     # Generate Certificates for Level 1 Students
-    generator = ID_Generator(data=[lvl1_students, lvl2_students], label_positions=[QRect(230, 330, 992, 407)])
+    generator = ID_Generator(data=[lvl1_students, lvl2_students], label_positions=[QRect(230, 330, 992, 407)],
+                             fonts=[QFont("Sans", 85), QFont("Sans", 62)], template="img/MGI_Blank Lvl1.png")
     # generator.add_label_to_cert(lvl2_students, font=generator._default_font,
     #                                 cert_pos=QRect(230, 330, 992, 407), template="img/MGI_Blank Lvl2.png")
     # generator.add_label_to_cert(lvl1_students, generator._default_font, 100),
     #                             template="img/MGI_Blank Lvl1.png", cert_pos=QRect(210, 330, 1092, 407))
     generator.gen_certs(data_list=[lvl1_students, lvl2_students],
-                        label_positions=[QRect(230, 220, 302, 107), QRect(96, 430, 302, 107)],
+                        label_positions=[QRect(230, 220, 402, 107), QRect(96, 430, 402, 107)],
                         template="img/MGI_Blank Lvl1.png",
-                        fonts=[QFont("Sans", 85), QFont("Sans", 62)],
+                        fonts=[QFont("Sans", 45), QFont("Sans", 32)],
                         alignment=["center", "center"],
                         canvas_size=QRect(0, 0, 800, 600),
                         save_folder="./Certificates")
