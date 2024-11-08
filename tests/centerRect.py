@@ -2,7 +2,7 @@ from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtGui import QPixmap, QFont, QWindow
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QLineEdit, QApplication, QDialog, QGridLayout
 
-from tests.canvas import Canvas
+from lib.canvas import Canvas
 
 
 def center_rect(width, height):
@@ -12,6 +12,7 @@ def center_rect(width, height):
     x = (screen_geo.width() - width) // 2
     y = (screen_geo.height() - height) // 2
     return QRect(x, y, width, height)
+
 
 def canvasBuild(self):
     self.vBoxLayout = QVBoxLayout()

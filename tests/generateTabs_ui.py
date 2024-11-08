@@ -12,10 +12,10 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow
-from tests.SpecialComboBox import TtfComboBox, FontSizeComboBox
 
-from generateTabs import get_data_from_canvas
-from tests.canvas import Canvas
+from lib.canvas import Canvas
+from lib.generate_tabs import get_data_from_canvas
+from lib.special_combo_box import TtfComboBox, FontSizeComboBox
 
 # helper function to translate texts in the window
 _translate = QtCore.QCoreApplication.translate
@@ -32,8 +32,8 @@ def generateTabs(parent: QtWidgets):
     canvas = self.canvas = Canvas(self)
     canvas.addTextBoxContent(
         rects=[QRect(0, 0, 100, 50), QRect(210, 30, 150, 40)],
-        rectIDs=["TextBox1", "TextBox2"],
-        rectFonts=[QFont("Lucida Console", 60), QFont("Arial", 12)],
+        rect_ids=["TextBox1", "TextBox2"],
+        rect_fonts=[QFont("Lucida Console", 60), QFont("Arial", 12)],
     )
     canvas_data = get_data_from_canvas(canvas)
 

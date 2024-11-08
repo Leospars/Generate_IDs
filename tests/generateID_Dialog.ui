@@ -8,6 +8,14 @@
         <property name="enabled">
             <bool>true</bool>
         </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>466</width>
+                <height>222</height>
+            </rect>
+        </property>
         <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
                 <horstretch>0</horstretch>
@@ -35,7 +43,7 @@
                     <x>9</x>
                     <y>9</y>
                     <width>442</width>
-                    <height>125</height>
+                    <height>157</height>
                 </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout">
@@ -181,7 +189,7 @@
             <property name="geometry">
                 <rect>
                     <x>120</x>
-                    <y>150</y>
+                    <y>170</y>
                     <width>200</width>
                     <height>40</height>
                 </rect>

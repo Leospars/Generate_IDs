@@ -8,7 +8,7 @@ from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QFont
 
 from lib.configured_log import log as print
-from tests.GetFonts import GetFonts
+from lib.get_fonts import GetFonts
 
 # Create fake names of characters from movies and cartoons
 lvl1_students = ["Ron Stoppable", "Kermit the Frog", "Danny Phantom", "Mickey Mouse"]
@@ -55,7 +55,7 @@ class ID_Generator:
         return save_folder
 
     @staticmethod
-    def getFileLocation(title_msg: str):
+    def get_file_location(title_msg: str):
         tk = tkinter.Tk()
         tk.withdraw()
         file_location = filedialog.askopenfile(title=title_msg)
@@ -134,7 +134,7 @@ class ID_Generator:
                 return
 
         if template is None:
-            template = ID_Generator.getFileLocation("Template file")
+            template = ID_Generator.get_file_location("Template file")
             if not template:
                 print("No template selected. Exiting...")
                 return
@@ -159,7 +159,7 @@ class ID_Generator:
 
             # Add Text to an image
 
-            draw.text((text_x, text_y), name, font=_font, fill=(0, 0, 0), align="center")
+            draw.text((text_x, text_y), name, font=_font, fill=(0, 0, 0), align=alignment)
 
             # Save the edited image
             if not os.path.exists(save_folder):
