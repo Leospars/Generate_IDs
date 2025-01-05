@@ -108,10 +108,10 @@ class ID_Generator:
         for i in range(1, len(data_list)):
             # for each image generated in the first iteration, add the label to the certificate
             print(f"Adding label set {i}: {data_list[i]}")
-            print(f"Saved paths: {[fname.split("\\")[-1] for fname in self.filenames]}")
+            print(f"Saved paths: {[fname.split(os.pathsep)[-1] for fname in self.filenames]}")
             for j in range(len(self.filenames)):
                 certificate = self.filenames[j]
-                print(f"Adding label to {certificate.split("\\")[-1]}")
+                print(f"Adding label to {certificate.split(os.pathsep)[-1]}")
                 self.add_label_to_cert([data_list[i][j]], fonts[i], label_positions[i], certificate, save_folder,
                                        filename=certificate, alignment=alignment[i], canvas_size=canvas_size,
                                        create_file=False)
