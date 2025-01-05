@@ -1,7 +1,7 @@
 import PyQt5.QtWidgets as Qtw
 from PyQt5.QtGui import QFont
 
-from tests.GetFonts import GetFonts
+from lib.get_fonts import GetFonts
 
 
 class TtfComboBox(Qtw.QComboBox):

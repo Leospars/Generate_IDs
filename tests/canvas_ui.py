@@ -10,10 +10,10 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from tests.canvas import Canvas
+from lib.canvas import Canvas
 
 
-class Ui_AddIDs(object):
+class UiAddIDs(object):
     def setupUi(self, AddIDs):
         AddIDs.setObjectName("AddIDs")
         AddIDs.setMaximumSize(QtCore.QSize(1280, 720))
@@ -39,7 +39,7 @@ class Ui_AddIDs(object):
         self.template_img = QtWidgets.QLabel(self.frame_2)
         self.template_img.setGeometry(QtCore.QRect(0, 0, 947, 623))
         self.template_img.setText("")
-        self.template_img.setPixmap(QtGui.QPixmap(".\\img/MGI_Blank Lvl1.png"))
+        self.template_img.setPixmap(QtGui.QPixmap("../img/MGI_Blank Lvl1.png"))
         self.template_img.setScaledContents(True)
         self.template_img.setObjectName("template_img")
         self.template_img.raise_()
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     AddIDs = QtWidgets.QDialog()
-    ui = Ui_AddIDs()
+    ui = UiAddIDs()
     ui.setupUi(AddIDs)
     AddIDs.show()
     sys.exit(app.exec_())

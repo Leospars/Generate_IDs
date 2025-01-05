@@ -10,7 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from SpecialComboBox import FontSizeComboBox, TtfComboBox
+from lib.special_combo_box import FontSizeComboBox, TtfComboBox
 
 
 class Ui_MainWindow(object):

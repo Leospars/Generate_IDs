@@ -78,17 +78,10 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.textBox1_Data.setPlaceholderText(_translate("MainWindow", "\"Sherice Marytal\", \"Mirabell Madrigal\",\n"
-                                                                       "                                               "
-                                                                       "     \"Jazmine Topples\", \"Mary Poppins\", "
-                                                                       "\"Kim\n"
-                                                                       "                                               "
-                                                                       "     Possible\", \"Ron Stoppable\", \"Kermit "
-                                                                       "the Frog\",\n"
-                                                                       "                                               "
-                                                                       "     \"Danny Phantom\", \"Mickey Mouse\"\n"
-                                                                       "                                               "
-                                                                       " "))
+        self.textBox1_Data.setPlaceholderText(_translate("MainWindow",
+                                                         "\"Sherice Marytal\", \"Mirabell Madrigal\", \"Jazmine Topples\", \"Mary Poppins\", \"Kim Possible\",\n"
+                                                         "\"Ron Stoppable\", \"Kermit the Frog\", \"Danny Phantom\", \"Mickey Mouse\""))
+
         self.toolBox.setItemText(self.toolBox.indexOf(self.toolBoxPage1), _translate("MainWindow", "TextBox1"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.toolBoxPage2), _translate("MainWindow", "TextBox2"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), _translate("MainWindow", "Page"))

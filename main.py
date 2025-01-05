@@ -12,10 +12,10 @@ from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QDialog
 
 from id_generator import ID_Generator
 from lib.canvas import Canvas
+from lib.canvas import center_rect
 from lib.configured_log import log as print
-from lib.generate_tabs import generateToolBox, updateToolBox, get_data_from_toolbox
+from lib.generate_tabs import generate_tool_box, update_tool_box, get_data_from_toolbox
 from main_ui import Ui_MainWindow
-from tests.windowBuild import center_rect
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -70,7 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Removing page {i}: {self.tool_box.widget(i).objectName() if self.tool_box.widget(i) else None}")
             self.tool_box.removeItem(i)
         print(f"Toolbox is emptied now. Page Count: {self.tool_box.count()}")
-        generateToolBox(self.tool_box, self.canvas)
+        generate_tool_box(self.tool_box, self.canvas)
 
     def addPaint(self, canvas):
         painter = canvas.painter
@@ -127,7 +127,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # print(f"Canvas Data: {self.canvas.rects, self.canvas.rectLabels,
         # [[font.family(), font.pointSize()] for font in self.canvas.rectFonts]}")
 
-        updateToolBox(self.tool_box, self.canvas)
+        update_tool_box(self.tool_box, self.canvas)
         self.canvas.unsetCursor()  # revert cursor
         self.canvas.mousePressEvent = lambda ev: None  # remove event handler
         print(f"{_id} added at {x, y} with size {width}x{height}")

@@ -5,8 +5,9 @@ from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolBox
 
-from SpecialComboBox import TtfComboBox, FontSizeComboBox
-from tests.canvas import Canvas
+from lib.canvas import Canvas
+from lib.configured_log import log as print
+from lib.special_combo_box import TtfComboBox, FontSizeComboBox
 
 
 class CanvasData:
@@ -14,7 +15,8 @@ class CanvasData:
     store data for each canvas field
     """
 
-    def __init__(self, data: str | Image, position: QRect, metadata: QFont | FreeTypeFont, alignment="Center",
+    # TODO: Use class constant variables for alignment
+    def __init__(self, data: str | Image, position: QRect, metadata: QFont | FreeTypeFont, alignment="center",
                  is_text=True):
         self.isText = is_text
         self.label_name = data if is_text else "Image"
@@ -29,8 +31,9 @@ class ToolPageData:
     store data from toolbox pages
     """
 
+    # TODO: Use class constant variables for alignment
     def __init__(self, page_name: str, labels: list[str], position: QRect, metadata: QFont,
-                 alignment="Center", is_text=True, images: list[Image] = None):
+                 alignment="center", is_text=True, images: list[Image] = None):
         self.page_name = page_name
         self.isText = is_text
         self.labels = labels if is_text else []
@@ -52,7 +55,7 @@ def get_data_from_canvas(canvas: Canvas):
 __translate__ = QtCore.QCoreApplication.translate
 
 
-def generateToolBox(tool_box: QToolBox, canvas: Canvas | list[CanvasData]):
+def generate_tool_box(tool_box: QToolBox, canvas: Canvas | list[CanvasData]):
     # if data types entered do not match expected throw an error
     if not isinstance(canvas, Canvas) and not isinstance(canvas, list):
         raise TypeError("canvas must be of type Canvas")
@@ -97,7 +100,6 @@ def generateToolBox(tool_box: QToolBox, canvas: Canvas | list[CanvasData]):
         text_box = QtWidgets.QPlainTextEdit(page)
         text_box.setGeometry(QtCore.QRect(0, 30, 800, 80))
         text_box.setObjectName(field_name + '_data')
-        text_box.setPlainText("Sherice Marytal, Mirabell Madrigal, Jazmine Topples, Mary Poppins")
         if data_type == "QFont":
             text_box.setPlaceholderText("Enter comma seperated values here . . .\n")
         else:
@@ -110,7 +112,7 @@ def generateToolBox(tool_box: QToolBox, canvas: Canvas | list[CanvasData]):
     return tool_box
 
 
-def updateToolBox(tool_box: QToolBox, canvas: Canvas):
+def update_tool_box(tool_box: QToolBox, canvas: Canvas):
     # if data types entered do not match expected throw an error
     if not isinstance(canvas, Canvas) and not (isinstance(canvas, list) and isinstance(canvas[0], CanvasData)):
         raise TypeError("canvas must be of type Canvas")
@@ -122,7 +124,7 @@ def updateToolBox(tool_box: QToolBox, canvas: Canvas):
     last_page = tool_box.count()
     canvas_data = get_data_from_canvas(canvas)
     canvas_data = canvas_data[last_page:]
-    generateToolBox(tool_box, canvas_data)
+    generate_tool_box(tool_box, canvas_data)
 
 
 def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas):
@@ -144,22 +146,24 @@ def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas):
         # get Convert text in textbox to list
         text = text_box.toPlainText().strip()
         labels = text.split(",") if text else []
+        labels = [label.strip() for label in labels]
 
         # get font and font size
-        font = font_combo_box.currentFont()
         font_size = int(font_size_combo_box.currentText())
+        font = font_combo_box.currentFont()
+        font.setPointSize(font_size)
 
         # extend data to respective lists
         page_data = ToolPageData(f"{label_name}_page", labels, canvas_data[i].position, font)
-        print(f"Page Data: {page_data.__dict__},\n Font: {font}, Font Size: {font_size}")
         toolbox_data.append(page_data)
 
     return toolbox_data
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
-        generateToolBox(self, canvas)
+        generate_tool_box(self, canvas)
 
 
 if __name__ == "__main__":
@@ -183,7 +187,7 @@ if __name__ == "__main__":
     vLayout.setObjectName("verticalLayout")
 
     window.tool_box = QtWidgets.QToolBox()
-    generateToolBox(window.tool_box, canvas)
+    generate_tool_box(window.tool_box, canvas)
     get_data_from_toolbox(window.tool_box, canvas)
     vLayout.addWidget(window.tool_box)
     centralWidget.setLayout(vLayout)
