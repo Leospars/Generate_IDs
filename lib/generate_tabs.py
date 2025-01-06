@@ -127,7 +127,7 @@ def update_tool_box(tool_box: QToolBox, canvas: Canvas):
     generate_tool_box(tool_box, canvas_data)
 
 
-def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas):
+def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas) -> list[ToolPageData]:
     canvas_data = get_data_from_canvas(canvas)
     toolbox_data = []
 
@@ -147,6 +147,8 @@ def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas):
         text = text_box.toPlainText().strip()
         labels = text.split(",") if text else []
         labels = [label.strip() for label in labels]
+        # Delete empty strings
+        labels = [label for label in labels if label]
 
         # get font and font size
         font_size = int(font_size_combo_box.currentText())
