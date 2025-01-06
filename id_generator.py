@@ -11,7 +11,7 @@ from lib.configured_log import log as print
 from lib.get_fonts import GetFonts
 
 # Create fake names of characters from movies and cartoons
-lvl1_students = ["Ron Stoppable", "Kermit the Frog", "Danny Phantom", "Mickey Mouse"]
+lvl1_students = ["Kermit the Frog", "Danny Phantom", "Mickey Mouse"]
 
 # Create fake names from anime characters
 lvl2_students = ["Shinobu Kocho", "Senku Ishigami", "Shikamaru Nara", "Rika Furude"]
@@ -21,7 +21,7 @@ _def_font_location = list(filter(lambda font_loc: font_loc.endswith("lucon.ttf")
 print(f"Uploaded Fonts: {_def_font_location}")
 _default_font = ImageFont.truetype(_def_font_location, 55)
 print(f"\nDefault Font: {_default_font.font.family}, {_default_font.font.height}pt")
-
+_get_filename = lambda path: path.split(os.sep)[-1]
 
 class ID_Generator:
     def __init__(self, data: list[list], label_positions: list[QRect], fonts: list[QFont], template: str,
@@ -37,8 +37,9 @@ class ID_Generator:
         else:
             self.fonts = fonts
         self.alignment = alignment
-        self.filenames = []
+        self.saved_filepaths = []
         self.save_folder = ""
+        self.id_group = "Certificate"
 
     @staticmethod
     def select_save_folder():
@@ -95,26 +96,43 @@ class ID_Generator:
         if not alignment:
             alignment = [self.alignment]
 
+        num_certs = max(map(len, data_list))
+        print(f"Number of Certificates: {num_certs}")
+
+        # If the data lists entered are different lengths repeat the last data set, good for entering signatures
+        for data in data_list:
+            [data.append(data[-1]) for _ in range(num_certs - len(data))]
+
         # print adjusted parameters
         print(f"Data: {data_list}\nLabel Positions: {label_positions}\nTemplate: {template}\n"
               f"Save Folder: {save_folder}\nFonts: {[[ttf.font.family, ttf.font.height] for ttf in fonts]}\n"
               f"Alignment: {alignment}")
 
-        self.add_label_to_cert(data_list[0], fonts[0], label_positions[0], template, save_folder,
-                               alignment=alignment[0], canvas_size=canvas_size, save_cert_filepath=True,
-                               create_file=True)
+        # Generate certificate with the longest label first
+        longest_list_i = data_list.index(max(data_list))
+        self.add_label_to_cert(data_list[longest_list_i], fonts[longest_list_i],
+                               label_positions[longest_list_i], template, save_folder,
+                            alignment=alignment[longest_list_i], canvas_size=canvas_size, save_cert_filepath=True,
+                            create_file=True)
+        print(f"Saved paths: {[_get_filename(fpath) for fpath in self.saved_filepaths]}")
 
-        print(f"Range: {list(range(1, len(data_list)))}, Length: 1 to {len(data_list)}")
-        for i in range(1, len(data_list)):
-            # for each image generated in the first iteration, add the label to the certificate
-            print(f"Adding label set {i}: {data_list[i]}")
-            print(f"Saved paths: {[fname.split(os.pathsep)[-1] for fname in self.filenames]}")
-            for j in range(len(self.filenames)):
-                certificate = self.filenames[j]
-                print(f"Adding label to {certificate.split(os.pathsep)[-1]}")
-                self.add_label_to_cert([data_list[i][j]], fonts[i], label_positions[i], certificate, save_folder,
-                                       filename=certificate, alignment=alignment[i], canvas_size=canvas_size,
-                                       create_file=False)
+        # For each label_list set from the 2nd set upwards add their corresponding labels to the certificate
+        for i in range(len(data_list)):
+            if i == longest_list_i:
+                continue
+
+            print(f"Adding label index {i}")
+            data = data_list[i]
+            print(f"Adding label index {i}: {data_list[i]}")
+
+            # For each image created in the first iteration add the label to the certificate
+            for j in range(len(data)):
+                cert_path = self.saved_filepaths[j]
+                fname = _get_filename(cert_path)
+                print(f"Adding label: {data[j]} to {fname}")
+                self.add_label_to_cert([data[j]], fonts[i], label_positions[i], template=cert_path,
+                                       save_folder=save_folder, filename=fname, alignment=alignment[i], canvas_size=canvas_size,
+                                    create_file=False)
 
     def add_label_to_cert(self, data: list[str] | list[Image],
                           font: FreeTypeFont = ImageFont.truetype("font/Sans.ttf", 55),
@@ -172,14 +190,14 @@ class ID_Generator:
                 name = name.replace(char, "_")
 
             if create_file:
-                filename = (name + " Certificate.png").strip()
+                filename = (name + f" {self.id_group}.png").strip()
             if not create_file and not filename:
                 print("No filename provided. Exiting...")
                 return
 
             save_path = os.path.abspath(os.path.join(save_folder, filename))
             img.save(save_path)
-            if save_cert_filepath: self.filenames.append(save_path)
+            if save_cert_filepath: self.saved_filepaths.append(save_path)
 
         print(f"Completed generating {len(data)} certificates for {save_folder}")
         # delay one second then open folder
@@ -201,9 +219,10 @@ class ID_Generator:
         scale_x = imgsz_x / float(canvas_width)
         scale_y = imgsz_y / float(canvas_height)
 
-        print(f"Image: {imgsz_x}, {imgsz_y}")
-        print(f"Canvas: {canvas_width}, {canvas_height}")
-        print(f"Scale: {scale_x}, {scale_y}")
+        # Debugging Scaled text box to match QFont and Pil.Image Size
+        # print(f"Image: {imgsz_x}, {imgsz_y}")
+        # print(f"Canvas: {canvas_width}, {canvas_height}")
+        # print(f"Scale: {scale_x}, {scale_y}")
 
         # scale the font size
         font_size = int(font.size * scale_y)
@@ -237,17 +256,17 @@ class ID_Generator:
 if __name__ == "__main__":
     # Generate Certificates for Level 1 Students
     generator = ID_Generator(data=[lvl1_students, lvl2_students], label_positions=[QRect(230, 330, 992, 407)],
-                             fonts=[QFont("Sans", 85), QFont("Sans", 62)], template="img/MGI_Blank Lvl1.png")
+                             fonts=[QFont("Sans", 85), QFont("Sans", 62)], template="img/_Certificate.png")
     # generator.add_label_to_cert(lvl2_students, font=generator._default_font,
     #                                 cert_pos=QRect(230, 330, 992, 407), template="img/MGI_Blank Lvl2.png")
     # generator.add_label_to_cert(lvl1_students, generator._default_font, 100),
     #                             template="img/MGI_Blank Lvl1.png", cert_pos=QRect(210, 330, 1092, 407))
     generator.gen_certs(data_list=[lvl1_students, lvl2_students],
                         label_positions=[QRect(230, 220, 402, 107), QRect(96, 430, 402, 107)],
-                        template="img/MGI_Blank Lvl1.png",
+                        template="img/_Certificate.png",
                         fonts=[QFont("Sans", 45), QFont("Sans", 32)],
                         alignment=["center", "center"],
                         canvas_size=QRect(0, 0, 800, 600),
                         save_folder="./Certificates")
     # open the last image generated
-    os.startfile(generator.filenames[0])
+    os.startfile(generator.saved_filepaths[0])
