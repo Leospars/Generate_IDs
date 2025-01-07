@@ -10,11 +10,7 @@ from PyQt5.QtGui import QFont
 from lib.configured_log import log as print
 from lib.get_fonts import GetFonts
 
-# Create fake names of characters from movies and cartoons
-lvl1_students = ["Kermit the Frog", "Danny Phantom", "Mickey Mouse"]
-
-# Create fake names from anime characters
-lvl2_students = ["Shinobu Kocho", "Senku Ishigami", "Shikamaru Nara", "Rika Furude"]
+import re
 
 _get_fonts = GetFonts()
 _def_font_location = list(filter(lambda font_loc: font_loc.endswith("lucon.ttf"), _get_fonts.system_ttf_fonts))[0]
@@ -97,6 +93,7 @@ class ID_Generator:
             alignment = [self.alignment]
 
         num_certs = max(map(len, data_list))
+        longest_list_i = data_list.index(max(data_list)) # will generate this list first
         print(f"Number of Certificates: {num_certs}")
 
         # If the data lists entered are different lengths repeat the last data set, good for entering signatures
@@ -109,7 +106,6 @@ class ID_Generator:
               f"Alignment: {alignment}")
 
         # Generate certificate with the longest label first
-        longest_list_i = data_list.index(max(data_list))
         self.add_label_to_cert(data_list[longest_list_i], fonts[longest_list_i],
                                label_positions[longest_list_i], template, save_folder,
                             alignment=alignment[longest_list_i], canvas_size=canvas_size, save_cert_filepath=True,
@@ -135,7 +131,7 @@ class ID_Generator:
                                     create_file=False)
 
     def add_label_to_cert(self, data: list[str] | list[Image],
-                          font: FreeTypeFont = ImageFont.truetype("font/Sans.ttf", 55),
+                          font: FreeTypeFont = ImageFont.truetype("./font/Sans.ttf", 55),
                           cert_pos: QRect = QRect(), template: str = None, save_folder: str = None, filename: str = "",
                           alignment="center", canvas_size=QRect(0, 0, 1037, 801),
                           save_cert_filepath=False, create_file=False):
@@ -184,10 +180,8 @@ class ID_Generator:
                 os.makedirs(save_folder)
 
             # Change name characters or pattern to meet structure for file names
-            restrict_char = "`'’"
-            print(f"name: {name}")
-            for char in restrict_char:
-                name = name.replace(char, "_")
+            name = re.sub(r'[`\'’<>:,"\\/|?*]', '*', name) 
+            name = re.sub(r'\*+', lambda m: '_' if len(m.group(0)) == 1 else '__', name)
 
             if create_file:
                 filename = (name + f" {self.id_group}.png").strip()
@@ -228,7 +222,7 @@ class ID_Generator:
         font_size = int(font.size * scale_y)
         font = ImageFont.truetype(font.path, font_size)
         text_w, text_h = font.font.getsize(name)[0]
-        print(f"Font Size: {font.size}, {font.font.family}, {font.font.height}")
+        #print(f"Font Size: {font.size}, {font.font.family}, {font.font.height}")
 
         # scale text box
         top_left = (x0 := cert_pos.x() * scale_x, y0 := cert_pos.y() * scale_y)
@@ -240,27 +234,28 @@ class ID_Generator:
         text_x = x0
         text_y = y0
         # Evaluate position of text in textbox
-        print(f"Text position: {text_x}, {text_y}")
-        print(f"Text Length: {text_w}, {text_h}")
+        # print(f"Text position: {text_x}, {text_y}")
+        # print(f"Text Length: {text_w}, {text_h}")
         if alignment == "center":
             if scaled_rect_w > text_w:
                 text_x = int(x0 + (scaled_rect_w - text_w) / 2)
                 text_y = int(y0 + (scaled_rect_h - text_h) / 2)
-                print(f"Centered: {text_x}, {text_y}")
             else:
-                print("Text too long for textbox. Adjusting...")
+                print("Text too long for textbox. Adjusting... Not implemented yet")
 
         return font.size, (int(text_x), int(text_y), text_w, text_h), scaled_rect
 
 
 if __name__ == "__main__":
+    # Create fake names of characters from movies and cartoons
+    lvl1_students = ["Kermit the Frog", "Danny Phantom", "Mickey Mouse"]
+
+    # Create fake names from anime characters
+    lvl2_students = ["Shinobu Kocho", "Senku Ishigami", "Shikamaru Nara", "Rika Furude"]
+
     # Generate Certificates for Level 1 Students
     generator = ID_Generator(data=[lvl1_students, lvl2_students], label_positions=[QRect(230, 330, 992, 407)],
                              fonts=[QFont("Sans", 85), QFont("Sans", 62)], template="img/_Certificate.png")
-    # generator.add_label_to_cert(lvl2_students, font=generator._default_font,
-    #                                 cert_pos=QRect(230, 330, 992, 407), template="img/MGI_Blank Lvl2.png")
-    # generator.add_label_to_cert(lvl1_students, generator._default_font, 100),
-    #                             template="img/MGI_Blank Lvl1.png", cert_pos=QRect(210, 330, 1092, 407))
     generator.gen_certs(data_list=[lvl1_students, lvl2_students],
                         label_positions=[QRect(230, 220, 402, 107), QRect(96, 430, 402, 107)],
                         template="img/_Certificate.png",
