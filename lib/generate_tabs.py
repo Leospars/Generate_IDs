@@ -147,6 +147,7 @@ def get_data_from_toolbox(tool_box: QToolBox, canvas: Canvas) -> list[ToolPageDa
         text = text_box.toPlainText().strip()
         labels = text.split(",") if text else []
         labels = [label.strip() for label in labels]
+        # TODO: add warning if label contains "<, >, :, ", /, , |, ?, *" restricted characters for file names
         # Delete empty strings
         labels = [label for label in labels if label]
 

@@ -10,19 +10,26 @@ from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QDialog
 
-from id_generator import ID_Generator
+from pathlib import Path
+CURR_FILE = Path(__file__).resolve()
+DIR = Path(__file__).resolve().parent
+
+from lib.id_generator import ID_Generator
 from lib.canvas import Canvas
 from lib.canvas import center_rect
 from lib.configured_log import log as print
 from lib.generate_tabs import generate_tool_box, update_tool_box, get_data_from_toolbox
+from lib.paths import IMG_DIR  # evaluates and updates BASE_DIR
 from main_ui import Ui_MainWindow
 
+print(f"Main Path: {Path(__file__).resolve()}")
+print(f"Main Base Dir: {DIR}")
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         # loadUi('main.ui', self)
-        self.template_filename = "./img/no-image.png"
+        self.template_fpath = str(IMG_DIR / "no-image.png")
         self.setupUi(self)
         self.show()
         self.addWidgets()
@@ -43,7 +50,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dataDialog.setGeometry(center_rect(300, 400))
 
         # set default template image
-        self.template_img.setPixmap(QPixmap(self.template_filename))
+        self.template_img.setPixmap(QPixmap(self.template_fpath))
 
         # remove all pages in tool box
         self.clear_ids()
@@ -55,13 +62,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearIDButton.clicked.connect(self.clear_ids)
 
     def uploadImage(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Open Template File", "",
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Template File", str(IMG_DIR),
                                                   "Image Files (*.png *.jpg *jpeg *.bmp);;All Files (*)")
 
-        self.template_filename = filename if filename else self.template_filename
-        if self.template_filename:
-            self.template_img.setPixmap(QPixmap(self.template_filename))
-            print(self.template_filename)
+        self.template_fpath = file_path if file_path else self.template_fpath
+        if self.template_fpath:
+            self.template_img.setPixmap(QPixmap(self.template_fpath))
+            print(self.template_fpath)
 
     def clear_ids(self):
         self.canvas.clearCanvas()
@@ -82,14 +89,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def generate_certificates(self):
         print("Generating ID")
         generator = ID_Generator(self.canvas.rectLabels, self.canvas.rects, self.canvas.rectFonts,
-                                 self.template_filename)
+                                 self.template_fpath)
         toolbox_data = get_data_from_toolbox(self.tool_box, self.canvas)
-        data_list = [data.labels for data in toolbox_data]
-        fonts = [data.metadata for data in toolbox_data]
-        label_positions = [data.position for data in toolbox_data]
-        alignment = [data.alignment for data in toolbox_data]
+        data_list = [page_data.labels for page_data in toolbox_data]
+        fonts = [page_data.metadata for page_data in toolbox_data]
+        label_positions = [page_data.position for page_data in toolbox_data]
+        alignment = [page_data.alignment for page_data in toolbox_data]
 
-        generator.gen_certs(data_list, label_positions, fonts, self.template_filename,
+        generator.gen_certs(data_list, label_positions, fonts, self.template_fpath,
                             alignment=alignment, canvas_size=self.canvas.size())
 
     def addTextBox(self):

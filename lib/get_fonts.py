@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 
 from PIL import ImageFont
 from PyQt5.QtGui import QFont
-
+from lib.paths import BASE_DIR
 
 class GetFonts:
     """
@@ -12,40 +13,44 @@ class GetFonts:
     """
 
     def __init__(self):
-        self.system_ttf_fonts = self.find_all_ttf_fonts()  # List of all ttf fonts files in the system
-        self.ttf_db = self.map_ttf_dir()  # Map all ttf font family to font file location
-        self.uploaded_fonts = self._get_uploaded_fonts()  # List file location of ttf files uploaded in app
+        self.all_ttf_fonts: list[str] = self.find_all_ttf_fonts()  # List of all ttf fonts files in the system
+        self.uploaded_fonts: list[str] = self._get_uploaded_fonts()  # List file location of ttf files uploaded in app
+        self.ttf_db = self.map_ttf_dir()  # Map all ttf font family to font file location [family: file_location]
 
+    @staticmethod
+    def _get_ttf_fonts(_dir):
+        fonts = []
+        for root, dirs, files in os.walk(_dir):
+            for file in files:
+                if file.endswith(".ttf"):
+                    fpath = str(Path(root) / file)
+                    try:
+                        ImageFont.truetype(fpath)
+                        fonts.append(fpath)
+                    except Exception as e:
+                        print(f"Cannot load {fpath} font: {e}")
+                        continue
+        return fonts
     @staticmethod
     def _get_uploaded_fonts():
         fonts = []
         # create a list of the absolute file location of all the fonts in this folder
-
-        for root, dirs, files in os.walk(os.path.abspath("../font")):
+        fonts_dir = (BASE_DIR / "font").resolve()
+        for root, dirs, files in os.walk(str(fonts_dir)):
             for file in files:
                 if file.endswith(".ttf"):
-                    fonts.append(os.path.join(root, file))
-
+                    fonts.append((Path(root) / file).resolve())
         return fonts
 
     @staticmethod
     def __get_fonts_directory__():
         if os.name == "nt":
-            return os.path.join(os.environ['WINDIR'], 'Fonts')
+            return Path(os.environ['WINDIR']) / 'Fonts'
         elif os.name == "posix":
             if 'darwin' in os.uname().sysname.lower():
                 return "/System/Library/Fonts"
             else:
                 return "/usr/share/fonts"
-        else:
-            return None
-
-    @staticmethod
-    def __get_downloads_directory__():
-        if os.name == "nt":
-            return os.path.join(os.environ['USERPROFILE'], 'Downloads')
-        elif os.name == "posix":
-            return os.path.join(os.environ['HOME'], 'Downloads')
         else:
             return None
 
@@ -56,33 +61,17 @@ class GetFonts:
             print("This function is only for Windows, Linux, and macOS.")
             return None
 
-        def get_ttf_fonts(_dir):
-            fonts = []
-            for root, dirs, files in os.walk(_dir):
-                for file in files:
-                    if file.endswith(".ttf"):
-                        fonts.append(os.path.join(root, file))
-            return fonts
-
-        directories = [fonts_dir, os.path.join(os.path.curdir, "./font"),
-                       os.path.join(GetFonts.__get_downloads_directory__(), "Fonts")]
+        directories = [fonts_dir, str(BASE_DIR / "font")]
         system_ttf_fonts = []
         for _dir in directories:
-            if os.path.exists(_dir):
-                ttf_fonts = get_ttf_fonts(_dir)
-                # Check if all the fonts can be loaded by PIL
-                for font_location in ttf_fonts:
-                    try:
-                        ImageFont.truetype(font_location)  # try loading font
-                        system_ttf_fonts.append(font_location)
-                    except Exception as e:
-                        print(f"Cannot load {font_location} font: {e}")
-                        ttf_fonts.remove(font_location)
-                        continue
+            if _dir and Path(_dir).exists():
+                ttf_fonts = GetFonts._get_ttf_fonts(_dir)
+                system_ttf_fonts.extend(ttf_fonts)
+        sorted(system_ttf_fonts)
         return system_ttf_fonts  # List of all ttf fonts in the system
 
     @staticmethod
-    def map_ttf_dir():
+    def map_ttf_dir() -> dict[str, str]: # [family: file_location]
         ttf_dir_map = {}
         all_fonts = GetFonts.find_all_ttf_fonts()
         for font_location in all_fonts:
@@ -98,14 +87,14 @@ class GetFonts:
 
     # Search for the font file in the fonts direct
     def find_ttf_font(self, font_family):
-        return self.ttf_db.get(font_family, None)
+        return self.ttf_db.get(font_family)
 
     def qfont_to_ttf(self, qfont: QFont):
-        qfont_family = qfont.family()
-        if qfont_family in self.ttf_db:
-            return ImageFont.truetype(self.ttf_db[qfont_family], float(qfont.pointSize()))
+        _qff = qfont.family()
+        if _qff in self.ttf_db:
+            return ImageFont.truetype(self.ttf_db[_qff], float(qfont.pointSize()))
         else:
-            print(f"Font conversion not found for {qfont_family}. Exiting...")
+            print(f"Font conversion not found for {_qff}. Exiting...")
             return None
 
 
@@ -113,6 +102,10 @@ if __name__ == "__main__":
     from PIL import Image, ImageDraw
 
     gf = GetFonts()
+    print(f"Total TTF Fonts: {len(gf.all_ttf_fonts)} :\n All ttf fonts:")
+
+    __filter_font_loc = list(filter(lambda font_loc: font_loc.endswith("Sans.ttf"), GetFonts().all_ttf_fonts))
+    print(f"Default font: {__filter_font_loc}")
     font = QFont("Lucida Console", 12)
     ttf_font = gf.qfont_to_ttf(font)
     print(f"\nFont: {font.family()}, {font.pointSize()}pt")

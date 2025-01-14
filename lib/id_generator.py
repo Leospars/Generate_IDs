@@ -1,26 +1,25 @@
-import os
+import re
 import tkinter
 from tkinter import filedialog
 
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ImageFont import FreeTypeFont
 from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QFont
+from os import startfile
 
 from lib.configured_log import log as print
 from lib.get_fonts import GetFonts
+from lib.paths import get_downloads_directory, BASE_DIR, FONT_DIR, IMG_DIR
 
-import re
-
-_get_fonts = GetFonts()
-_def_font_location = list(filter(lambda font_loc: font_loc.endswith("lucon.ttf"), _get_fonts.system_ttf_fonts))[0]
-print(f"Uploaded Fonts: {_def_font_location}")
-_default_font = ImageFont.truetype(_def_font_location, 55)
-print(f"\nDefault Font: {_default_font.font.family}, {_default_font.font.height}pt")
-_get_filename = lambda path: path.split(os.sep)[-1]
 
 class ID_Generator:
-    def __init__(self, data: list[list], label_positions: list[QRect], fonts: list[QFont], template: str,
+    __filter_font_loc = list(filter(lambda font_loc: font_loc.endswith("Sans.ttf"), GetFonts().all_ttf_fonts))
+    _default_font = ImageFont.truetype(__filter_font_loc[0], 55)
+    print(f"Default Font: {_default_font.font.family}, {_default_font.font.height}pt")
+
+    def __init__(self, data: list[list[str]], label_positions: list[QRect], fonts: list[QFont], template: str,
                  save_folder="",
                  alignment="center"):
 
@@ -29,11 +28,11 @@ class ID_Generator:
         self.template = template
         self.save_folder = save_folder
         if fonts is None:
-            self.fonts = [_default_font]
+            self.fonts: list[FreeTypeFont] = [ID_Generator._default_font]
         else:
             self.fonts = fonts
-        self.alignment = alignment
-        self.saved_filepaths = []
+        self.alignment: str = alignment
+        self.saved_filepaths: list[Path] = []
         self.save_folder = ""
         self.id_group = "Certificate"
 
@@ -41,7 +40,7 @@ class ID_Generator:
     def select_save_folder():
         tk = tkinter.Tk()
         tk.withdraw()
-        save_folder = filedialog.askdirectory(title="Save Generated Certificates to", initialdir=os.getcwd())
+        save_folder = filedialog.askdirectory(title="Save Generated Certificates to", initialdir=get_downloads_directory())
         if not save_folder:
             print("No folder selected. Exiting...")
             tk.destroy()
@@ -79,7 +78,8 @@ class ID_Generator:
                 return
 
         if not fonts:
-            fonts = [_default_font]
+            print("No fonts provided. Exiting...")
+            return
         else:
             for i in range(len(fonts)):
                 font = fonts[i]
@@ -93,7 +93,7 @@ class ID_Generator:
             alignment = [self.alignment]
 
         num_certs = max(map(len, data_list))
-        longest_list_i = data_list.index(max(data_list)) # will generate this list first
+        longest_list_i = data_list.index(max(data_list))  # will generate this list first
         print(f"Number of Certificates: {num_certs}")
 
         # If the data lists entered are different lengths repeat the last data set, good for entering signatures
@@ -108,9 +108,9 @@ class ID_Generator:
         # Generate certificate with the longest label first
         self.add_label_to_cert(data_list[longest_list_i], fonts[longest_list_i],
                                label_positions[longest_list_i], template, save_folder,
-                            alignment=alignment[longest_list_i], canvas_size=canvas_size, save_cert_filepath=True,
-                            create_file=True)
-        print(f"Saved paths: {[_get_filename(fpath) for fpath in self.saved_filepaths]}")
+                               alignment=alignment[longest_list_i], canvas_size=canvas_size, save_cert_filepath=True,
+                               create_file=True)
+        print(f"Saved paths: {[fpath.name for fpath in self.saved_filepaths]}")
 
         # For each label_list set from the 2nd set upwards add their corresponding labels to the certificate
         for i in range(len(data_list)):
@@ -124,15 +124,16 @@ class ID_Generator:
             # For each image created in the first iteration add the label to the certificate
             for j in range(len(data)):
                 cert_path = self.saved_filepaths[j]
-                fname = _get_filename(cert_path)
+                fname = cert_path.name
                 print(f"Adding label: {data[j]} to {fname}")
                 self.add_label_to_cert([data[j]], fonts[i], label_positions[i], template=cert_path,
-                                       save_folder=save_folder, filename=fname, alignment=alignment[i], canvas_size=canvas_size,
-                                    create_file=False)
+                                       save_folder=save_folder, filename=fname, alignment=alignment[i],
+                                       canvas_size=canvas_size,
+                                       create_file=False)
 
     def add_label_to_cert(self, data: list[str] | list[Image],
-                          font: FreeTypeFont = ImageFont.truetype("./font/Sans.ttf", 55),
-                          cert_pos: QRect = QRect(), template: str = None, save_folder: str = None, filename: str = "",
+                          font: FreeTypeFont = ImageFont.truetype(FONT_DIR / "Sans.ttf", 55),
+                          cert_pos: QRect = QRect(), template: str | Path = None, save_folder: str = None, filename: str = "",
                           alignment="center", canvas_size=QRect(0, 0, 1037, 801),
                           save_cert_filepath=False, create_file=False):
         if not data or not data[0]:
@@ -176,11 +177,11 @@ class ID_Generator:
             draw.text((text_x, text_y), name, font=_font, fill=(0, 0, 0), align=alignment)
 
             # Save the edited image
-            if not os.path.exists(save_folder):
-                os.makedirs(save_folder)
+            if not Path(save_folder).exists():
+                Path.mkdir(Path(save_folder), parents=True)
 
             # Change name characters or pattern to meet structure for file names
-            name = re.sub(r'[`\'’<>:,"\\/|?*]', '*', name) 
+            name = re.sub(r'[`\'’<>:,"\\/|?*]', '*', name)
             name = re.sub(r'\*+', lambda m: '_' if len(m.group(0)) == 1 else '__', name)
 
             if create_file:
@@ -189,7 +190,7 @@ class ID_Generator:
                 print("No filename provided. Exiting...")
                 return
 
-            save_path = os.path.abspath(os.path.join(save_folder, filename))
+            save_path = (Path(save_folder) / filename).resolve()
             img.save(save_path)
             if save_cert_filepath: self.saved_filepaths.append(save_path)
 
@@ -255,13 +256,13 @@ if __name__ == "__main__":
 
     # Generate Certificates for Level 1 Students
     generator = ID_Generator(data=[lvl1_students, lvl2_students], label_positions=[QRect(230, 330, 992, 407)],
-                             fonts=[QFont("Sans", 85), QFont("Sans", 62)], template="img/_Certificate.png")
+                             fonts=[QFont("Sans", 85), QFont("Sans", 62)], template=IMG_DIR/"_Certificate.png")
     generator.gen_certs(data_list=[lvl1_students, lvl2_students],
                         label_positions=[QRect(230, 220, 402, 107), QRect(96, 430, 402, 107)],
-                        template="img/_Certificate.png",
+                        template= IMG_DIR / "_Certificate.png",
                         fonts=[QFont("Sans", 45), QFont("Sans", 32)],
                         alignment=["center", "center"],
                         canvas_size=QRect(0, 0, 800, 600),
-                        save_folder="./Certificates")
+                        save_folder=BASE_DIR / "Certificates")
     # open the last image generated
-    os.startfile(generator.saved_filepaths[0])
+    startfile(generator.saved_filepaths[0])

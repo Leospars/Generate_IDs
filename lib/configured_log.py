@@ -1,30 +1,25 @@
 # lib/configured_log.py
 import logging
+from lib.paths import BASE_DIR
 
-# ANSI color codes
-BLACK = "\033[0;30m"
-RED = "\033[0;31m"
-GREEN = "\033[0;32m"
-YELLOW = "\033[0;33m"
-BLUE = "\033[0;34m"
-MAGENTA = "\033[0;35m"
-CYAN = "\033[0;36m"
-WHITE = "\033[0;37m"
-GREY = "\033[1;30m"
+ENABLE_COLOR = False
 
-# Text formatting
-BOLD = "\033[1m"
-UNDERLINE = "\033[4m"
-ITALICS = "\033[3m"
+# ANSI color codes and text formatting
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, GREY = [""] * 9
+BOLD, UNDERLINE, ITALICS, RESET = [""] * 4
 
-# Reset color
-RESET = "\033[0m"
+if ENABLE_COLOR:
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, GREY = (
+        "\033[0;30m", "\033[0;31m", "\033[0;32m", "\033[0;33m", "\033[0;34m", "\033[0;35m", "\033[0;36m",
+        "\033[0;37m", "\033[1;30m"
+    )
+    BOLD, UNDERLINE, ITALICS, RESET = "\033[1m", "\033[4m", "\033[3m", "\033[0m"
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format=f'{GREY}%(name)s|{CYAN}%(funcName)s:{RESET} %(message)s',
+    format=f'\n<%(asctime)s> {GREY}%(levelname)-9s| %(name)-10s - {CYAN}%(funcName)-10s:{RESET}\n%(message)s',
     handlers=[
-        logging.FileHandler("../app.log"),
+        logging.FileHandler(BASE_DIR / "app.log"),
         logging.StreamHandler()
     ]
 )
@@ -33,3 +28,8 @@ logging.basicConfig(
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 
 log = logging.getLogger(__name__).debug
+log_error = logging.error
+
+if __name__ == "__main__":
+    log("This is a test log")
+    logging.error("This is a test error")
