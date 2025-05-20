@@ -32,7 +32,7 @@ pyinstaller main.spec
 If you encounter any issues with the exe file, try this command and editing the generated spec file
 ```bash
 pyi-makespec --name "ID Generator" --add-data "lib:lib" --add-data "img/no-image.png:img" --add-data "font:font" \
---icon "./img/id_generator_icon.png" --noupx --windowed --optimize 1 -F main.py
+--icon "./img/id_generator_logo.jpg" --noupx --windowed --optimize 1 -F main.py
 ```
 Further information in documentation: https://pyinstaller.org/en/stable/man/pyi-makespec.html
 
