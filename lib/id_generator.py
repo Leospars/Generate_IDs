@@ -93,8 +93,9 @@ class ID_Generator:
             alignment = [self.alignment]
 
         num_certs = max(map(len, data_list))
-        longest_list_i = data_list.index(max(data_list))  # will generate this list first
+        longest_list_i = data_list.index(max(data_list, key=len))  # will generate this list first
         print(f"Number of Certificates: {num_certs}")
+        print(f"File name list: {data_list[longest_list_i]}")
 
         # If the data lists entered are different lengths repeat the last data set, good for entering signatures
         for data in data_list:
